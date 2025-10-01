@@ -1,8 +1,7 @@
 #include "byte_stream.hh"
 #include "debug.hh"
-#include <cstdint>
 #include <algorithm>
-
+#include <cstdint>
 
 using namespace std;
 
@@ -13,12 +12,16 @@ void Writer::push( string data )
 
 {
   // edge case
-  if (is_closed()) { return; }
+  if ( is_closed() ) {
+    return;
+  }
 
-  const uint64_t len = min<uint64_t>( available_capacity(), static_cast<uint64_t>(data.size()) );
-  if (len == 0) { return; }
+  const uint64_t len = min<uint64_t>( available_capacity(), static_cast<uint64_t>( data.size() ) );
+  if ( len == 0 ) {
+    return;
+  }
 
-  buf_.append(data.data(), static_cast<size_t>(len)); 
+  buf_.append( data.data(), static_cast<size_t>( len ) );
   total_pushed_ += len;
 }
 
@@ -38,9 +41,9 @@ bool Writer::is_closed() const
 uint64_t Writer::available_capacity() const
 {
 
-  const uint64_t remaining = static_cast<uint64_t>(buf_.size()) - offset_;
-  if (remaining <= capacity_) { 
-    return capacity_ - remaining; 
+  const uint64_t remaining = static_cast<uint64_t>( buf_.size() ) - offset_;
+  if ( remaining <= capacity_ ) {
+    return capacity_ - remaining;
   } else {
     return 0;
   }
@@ -58,20 +61,20 @@ uint64_t Writer::bytes_pushed() const
 // the caller to do a lot of extra work.
 string_view Reader::peek() const
 {
-  const uint64_t remaining = static_cast<uint64_t>(buf_.size()) - offset_;
-  return string_view( buf_.data() + offset_, remaining);
+  const uint64_t remaining = static_cast<uint64_t>( buf_.size() ) - offset_;
+  return string_view( buf_.data() + offset_, remaining );
 }
 
 // Remove `len` bytes from the buffer.
 void Reader::pop( uint64_t len )
 {
-  const uint64_t remaining = static_cast<uint64_t>(buf_.size()) - offset_;
-  const uint64_t num = min<uint64_t>(len, remaining);
+  const uint64_t remaining = static_cast<uint64_t>( buf_.size() ) - offset_;
+  const uint64_t num = min<uint64_t>( len, remaining );
   offset_ += num;
   total_popped_ += num;
 
-  if (offset_ > buf_.size() / 2) {
-    buf_.erase(0, offset_);
+  if ( offset_ > buf_.size() / 2 ) {
+    buf_.erase( 0, offset_ );
     offset_ = 0;
   }
 }
@@ -79,7 +82,7 @@ void Reader::pop( uint64_t len )
 // Is the stream finished (closed and fully popped)?
 bool Reader::is_finished() const
 {
-  return ( buf_.size() - offset_ == 0) && isclosed_;
+  return ( buf_.size() - offset_ == 0 ) && isclosed_;
 }
 
 // Number of bytes currently buffered (pushed and not popped)

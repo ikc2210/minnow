@@ -25,13 +25,13 @@ protected:
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
   uint64_t capacity_;
 
-  std::string buf_{};
+  std::string buf_ {};
   bool error_ {};
 
-  bool isclosed_{false}; // default set to false
-  uint64_t total_pushed_{0}; // all pushed
-  uint64_t total_popped_{0};
-  uint64_t offset_{0}; // artificial beginning of buffer
+  bool isclosed_ { false };     // default set to false
+  uint64_t total_pushed_ { 0 }; // all pushed
+  uint64_t total_popped_ { 0 };
+  uint64_t offset_ { 0 }; // artificial beginning of buffer
 };
 
 class Writer : public ByteStream

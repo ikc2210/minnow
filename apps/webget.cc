@@ -12,7 +12,7 @@ namespace {
 void get_URL( const string& host, const string& path )
 {
   TCPSocket socket;
-  socket.connect(Address(host, "http"));
+  socket.connect( Address( host, "http" ) );
 
   string request;
   request += "GET " + path + " HTTP/1.1\r\n";
@@ -20,11 +20,11 @@ void get_URL( const string& host, const string& path )
   request += "Connection: close\r\n";
   request += "\r\n";
 
-  socket.write_all(request);
+  socket.write_all( request );
 
-  while (!socket.eof()) {
+  while ( !socket.eof() ) {
     string temp;
-    socket.read(temp);
+    socket.read( temp );
     cout << temp;
   }
 
