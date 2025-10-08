@@ -5,15 +5,14 @@ using namespace std;
 
 void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_substring )
 {
-  auto &w = output_.writer();
+  auto& w = output_.writer();
 
   // end of file
   if ( is_last_substring ) {
     uint64_t end = first_index + data.size();
-    if ( !eof_is_known_ || end < eof_index_ ) { 
-      eof_is_known_ = true; 
-      eof_index_ = end; 
-
+    if ( !eof_is_known_ || end < eof_index_ ) {
+      eof_is_known_ = true;
+      eof_index_ = end;
     }
   }
 
@@ -21,8 +20,7 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
   uint64_t unacceptable = first_unassembled_idx_ + w.available_capacity();
   if ( first_index + data.size() <= first_unassembled_idx_ || first_index >= unacceptable ) {
 
-    if ( eof_is_known_ && first_unassembled_idx_ == eof_index_ ) 
-    { 
+    if ( eof_is_known_ && first_unassembled_idx_ == eof_index_ ) {
       w.close();
     }
     return;
@@ -38,7 +36,8 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
   }
 
   if ( data.empty() ) {
-    if ( eof_is_known_ && first_unassembled_idx_ == eof_index_ ) w.close();
+    if ( eof_is_known_ && first_unassembled_idx_ == eof_index_ )
+      w.close();
     return;
   }
 
@@ -56,18 +55,17 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
     if ( prev_right >= left ) {
 
       // etend on left side
-      if ( prev_left < left ) { 
+      if ( prev_left < left ) {
 
-        combined.insert( 0, prev->second.substr( 0, left - prev_left ) ); 
-        left = prev_left; 
-
+        combined.insert( 0, prev->second.substr( 0, left - prev_left ) );
+        left = prev_left;
       }
 
       // extend on right side
-      if ( prev_right > right ) { 
-        
-        combined += prev->second.substr( right - prev_left ); 
-        right = prev_right; 
+      if ( prev_right > right ) {
+
+        combined += prev->second.substr( right - prev_left );
+        right = prev_right;
       }
 
       pending_ = pending_ - prev->second.size();
@@ -80,11 +78,10 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
     uint64_t curr_left = it->first;
     uint64_t curr_right = curr_left + it->second.size();
 
-    if ( curr_right > right ) { 
+    if ( curr_right > right ) {
 
-      combined += it->second.substr( right - curr_left ); 
-      right = curr_right; 
-    
+      combined += it->second.substr( right - curr_left );
+      right = curr_right;
     }
 
     pending_ -= it->second.size();
@@ -94,7 +91,7 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
   pending_ += combined.size();
   segments[left] = combined;
 
-  // push continuous portions to output 
+  // push continuous portions to output
   while ( true ) {
 
     auto h = segments.find( first_unassembled_idx_ );
@@ -104,7 +101,7 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
 
     size_t n = std::min( h->second.size(), (size_t)w.available_capacity() );
     w.push( h->second.substr( 0, n ) );
-    
+
     pending_ -= n;
     first_unassembled_idx_ += n;
 
@@ -128,5 +125,4 @@ void Reassembler::insert( uint64_t first_index, std::string data, bool is_last_s
 uint64_t Reassembler::count_bytes_pending() const
 {
   return pending_;
-
 }

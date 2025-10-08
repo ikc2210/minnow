@@ -4,7 +4,6 @@
 #include <map>
 #include <optional>
 
-
 class Reassembler
 {
 public:
@@ -46,11 +45,10 @@ public:
 private:
   ByteStream output_;
 
-  uint64_t first_unassembled_idx_{0};
-  uint64_t pending_{0};
-  bool eof_is_known_{false};
-  uint64_t eof_index_{0};
+  uint64_t first_unassembled_idx_ { 0 };
+  uint64_t pending_ { 0 };
+  bool eof_is_known_ { false };
+  uint64_t eof_index_ { 0 };
 
   std::map<uint64_t, std::string> segments;
-
 };

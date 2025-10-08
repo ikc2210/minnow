@@ -14,7 +14,7 @@ using namespace std;
 //   datagram += string( 6, 0 );
 
 //   // destination address
-//   datagram += char(10);  
+//   datagram += char(10);
 //   datagram += char(144);
 //   datagram += char(0);
 //   datagram += char(159);
@@ -23,17 +23,18 @@ using namespace std;
 //   datagram += "Hiiiiii!";
 
 //   sock.connect(Address("10.144.0.159"));
-//   sock.write(datagram);  
+//   sock.write(datagram);
 
 //   return 0;
 // }
 
-int main() { // UDP
+int main()
+{ // UDP
   const string msg = "HEYYYY! Ina is sending this from 10.144.0.158";
-  const Address dst{"10.144.0.159", 4242};
+  const Address dst { "10.144.0.159", 4242 };
 
   UDPSocket sock;
-  sock.connect(dst);
-  sock.write(msg);
+  sock.connect( dst );
+  sock.write( msg );
   return 0;
 }
