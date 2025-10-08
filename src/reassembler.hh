@@ -1,13 +1,15 @@
 #pragma once
 
 #include "byte_stream.hh"
+#include <map>
+#include <optional>
+
 
 class Reassembler
 {
 public:
   // Construct Reassembler to write into given ByteStream.
-  explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ) {}
-
+  explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ), segments() {}
   /*
    * Insert a new substring to be reassembled into a ByteStream.
    *   `first_index`: the index of the first byte of the substring
@@ -43,4 +45,12 @@ public:
 
 private:
   ByteStream output_;
+
+  uint64_t first_unassembled_idx_{0};
+  uint64_t pending_{0};
+  bool eof_is_known_{false};
+  uint64_t eof_index_{0};
+
+  std::map<uint64_t, std::string> segments;
+
 };
