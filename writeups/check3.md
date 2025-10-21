@@ -46,6 +46,9 @@ However, I could make this function O(1) by ultimately maintaining a running cou
 I update whenever it is modified. For the sake of this checkpoint, however, I found it sufficiently
 efficient to use a linear approach.
 
+Hands-on Activity (with Labmate):
+[To be Added]
+
 Implementation Challenges:
 I had quite a bit of debugging to get through for this checkpoint, as I often forgot that 
 FIN and SYN would each require a seqno. Furthermore, I often had to remind myself of the documentation
