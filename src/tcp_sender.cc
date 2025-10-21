@@ -8,15 +8,25 @@ using namespace std;
 // How many sequence numbers are outstanding?
 uint64_t TCPSender::sequence_numbers_in_flight() const
 {
-  debug( "unimplemented sequence_numbers_in_flight() called" );
-  return {};
+
+  //runtime considerations here, could technically store internally?
+
+  uint64_t total = 0;
+  std::queue<TCPSenderMessage> outstanding_copy = outstanding_messages_;
+
+  while (!outstanding_copy.empty()) {
+    total += outstanding_copy.front().sequence_length();
+    outstanding_copy.pop();
+  }
+
+  return total;
+  
 }
 
 // How many consecutive retransmissions have happened?
 uint64_t TCPSender::consecutive_retransmissions() const
 {
-  debug( "unimplemented consecutive_retransmissions() called" );
-  return {};
+  return retransmission_cnt_;
 }
 
 void TCPSender::push( const TransmitFunction& transmit )
@@ -97,8 +107,9 @@ void TCPSender::push( const TransmitFunction& transmit )
 
 TCPSenderMessage TCPSender::make_empty_message() const
 {
-  debug( "unimplemented make_empty_message() called" );
-  return {};
+  TCPSenderMessage empty_msg;
+  empty_msg.seqno = Wrap32::wrap(next_seqno_, isn_);
+  return empty_msg;
 }
 
 void TCPSender::receive( const TCPReceiverMessage& msg )
