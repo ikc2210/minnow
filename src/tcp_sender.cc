@@ -59,7 +59,7 @@ void TCPSender::push( const TransmitFunction& transmit )
 
     }
 
-    // read paylod
+    // read payload
     if (reader().bytes_buffered() > 0 && avail > 0) {
       uint64_t size_of_payload = min( {avail, TCPConfig::MAX_PAYLOAD_SIZE, reader().bytes_buffered()});
 
@@ -80,6 +80,10 @@ void TCPSender::push( const TransmitFunction& transmit )
       next_seqno_++;
     }
 
+    if (reader().has_error()) {
+      message.RST = true;
+    }
+  
 
     if (message.sequence_length() == 0) {break; } // prevent sending empty message 
     transmit(message);
@@ -109,16 +113,23 @@ TCPSenderMessage TCPSender::make_empty_message() const
 {
   TCPSenderMessage empty_msg;
   empty_msg.seqno = Wrap32::wrap(next_seqno_, isn_);
+  empty_msg.RST = reader().has_error();
   return empty_msg;
 }
 
 void TCPSender::receive( const TCPReceiverMessage& msg )
 {
-  window_sz_ = msg.window_size; //window size can be updated
+  if (msg.RST) {
+    reader().set_error();
+    return;
+  }
 
   if (!msg.ackno.has_value()) {
     return;
   }
+
+  window_sz_ = msg.window_size; //window size can be updated
+
 
   uint64_t ack_no = msg.ackno->unwrap(isn_, next_seqno_ );
 
@@ -142,18 +153,18 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
     } else { // oldest is still oustanding
       break;
     }
+  }
 
-    if (need_rto_reset) { // point 7 in spec
-      rto_ = initial_RTO_ms_;
-      retransmission_cnt_ = 0;
+  if (need_rto_reset) { // point 7 in spec
+    rto_ = initial_RTO_ms_;
+    retransmission_cnt_ = 0;
 
-      if (!outstanding_messages_.empty() ) {
+    if (!outstanding_messages_.empty() ) {
 
-        total_time_passed_ = 0;
-        timer_is_running_ = true;
-      } else {
-        timer_is_running_ = false;
-      }
+      total_time_passed_ = 0;
+      timer_is_running_ = true;
+    } else {
+      timer_is_running_ = false;
     }
   }
 
