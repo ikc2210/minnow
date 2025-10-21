@@ -114,12 +114,72 @@ TCPSenderMessage TCPSender::make_empty_message() const
 
 void TCPSender::receive( const TCPReceiverMessage& msg )
 {
-  debug( "unimplemented receive() called" );
-  (void)msg;
+  window_sz_ = msg.window_size; //window size can be updated
+
+  if (!msg.ackno.has_value()) {
+    return;
+  }
+
+  uint64_t ack_no = msg.ackno->unwrap(isn_, next_seqno_ );
+
+  //invalid acknos - maybe should indicate error?
+  if (ack_no > next_seqno_) {return; }
+
+  ack_received_ = true;
+  ack_seqno_ = ack_no;
+
+  bool need_rto_reset = false;
+  while (!outstanding_messages_.empty() ) {
+
+    TCPSenderMessage oldest = outstanding_messages_.front();
+    uint64_t oldest_start = oldest.seqno.unwrap(isn_, next_seqno_ );
+    uint64_t oldest_end = oldest_start + oldest.sequence_length();
+
+    if (ack_no >= oldest_end) { // if acknowledged
+      outstanding_messages_.pop();
+      need_rto_reset = true; 
+
+    } else { // oldest is still oustanding
+      break;
+    }
+
+    if (need_rto_reset) { // point 7 in spec
+      rto_ = initial_RTO_ms_;
+      retransmission_cnt_ = 0;
+
+      if (!outstanding_messages_.empty() ) {
+
+        total_time_passed_ = 0;
+        timer_is_running_ = true;
+      } else {
+        timer_is_running_ = false;
+      }
+    }
+  }
+
+
 }
 
 void TCPSender::tick( uint64_t ms_since_last_tick, const TransmitFunction& transmit )
 {
-  debug( "unimplemented tick({}, ...) called", ms_since_last_tick );
-  (void)transmit;
+  total_time_passed_ += ms_since_last_tick;
+
+  if (!timer_is_running_) {
+    return; // or error?
+  }
+
+  if (total_time_passed_ >= rto_) { // expired
+    if (!outstanding_messages_.empty() ) {
+      TCPSenderMessage earliest = outstanding_messages_.front();
+      transmit(earliest);
+      
+    }
+
+    if (window_sz_ > 0) {
+      retransmission_cnt_++;
+      rto_*= 2;
+    }
+
+    total_time_passed_ = 0; // reseet
+  }
 }
