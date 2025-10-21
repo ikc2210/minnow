@@ -42,4 +42,22 @@ private:
   ByteStream input_;
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+
+  uint64_t next_seqno_ { };
+  bool sent_SYN_ { };
+  bool sent_FIN_ { };
+
+  std::queue<TCPSenderMessage> outstanding_messages_ {};
+
+  uint64_t window_sz_ {1 }; // set default to 1 if actually 0
+  uint64_t ack_seqno_ {}; // to know where receiver window begins
+  bool ack_received_ {}; // to track wehther ack has been received
+
+  uint64_t rto_ {initial_RTO_ms_ }; // given
+  uint64_t total_time_passed_ {}; // to keep track of total time that has passed since timer bega
+  bool timer_is_running_ {};
+  uint64_t retransmission_cnt_ {}; // to keep cnt of retransmissions
+
+
+
 };
