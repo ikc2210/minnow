@@ -47,7 +47,17 @@ I update whenever it is modified. For the sake of this checkpoint, however, I fo
 efficient to use a linear approach.
 
 Hands-on Activity (with Labmate):
-[To be Added]
+
+First began with 500,000 bytes (half a megabyte), then iterated to 1 megabyte, then 5 megabytes, then 10 megbaytes, 20 megabytes, and then 50 megabytes. We stopped at 50 megabytes due to limited time spent working
+on this assignment. Catherine was the server, and I was the client. This took about 5 minutes.
+
+For 50 MB:
+- Her SHA256: fc13129df98586708e0d4aa00f2be6f4be9e442dfa8f4463c8ef4c86c697b420  /tmp/big.txt
+- My SHA256: fc13129df98586708e0d4aa00f2be6f4be9e442dfa8f4463c8ef4c86c697b420  /tmp/big-received.txt
+
+- Her file size (ls output): -rw-rw-r-- 1 catherinemnzhang catherinemnzhang 50000000 Oct 21 18:28 /tmp/big.txt
+- My file size (ls output): -rw-rw-r-- 1 inachun inachun 50000000 Oct 21 18:32 /tmp/big-received.txt
+
 
 Implementation Challenges:
 I had quite a bit of debugging to get through for this checkpoint, as I often forgot that 
