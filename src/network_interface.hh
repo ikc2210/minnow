@@ -5,7 +5,9 @@
 #include "ipv4_datagram.hh"
 
 #include <memory>
+#include <map>
 #include <queue>
+#include <list>
 
 // A "network interface" that connects IP (the internet layer, or network layer)
 // with Ethernet (the network access layer, or link layer).
@@ -82,4 +84,17 @@ private:
 
   // Datagrams that have been received
   std::queue<InternetDatagram> datagrams_received_ {};
+
+  struct ARP_Entry {
+    EthernetAddress addr;
+    size_t timestamp;
+  };
+
+  std::map<uint32_t, ARP_Entry> arp_cache_ {};
+
+  std::map<uint32_t, size_t> arp_req_times_ {};
+  std::map<uint32_t, std::list<InternetDatagram>> queued {};
+  size_t time_ {};
+
+
 };
