@@ -20,76 +20,73 @@ void Router::add_route( const uint32_t route_prefix,
        << static_cast<int>( prefix_length ) << " => " << ( next_hop.has_value() ? next_hop->ip() : "(direct)" )
        << " on interface " << interface_num << "\n";
 
-  routing_table_.push_back({route_prefix, prefix_length, next_hop, interface_num});
+  routing_table_.push_back( { route_prefix, prefix_length, next_hop, interface_num } );
 }
 
 // Go through all the interfaces, and route every incoming datagram to its proper outgoing interface.
-void Router::route() {
+void Router::route()
+{
 
-  for (auto& interface : interfaces_) {
-
+  for ( auto& interface : interfaces_ ) {
 
     auto& datagrams_in = interface->datagrams_received();
-    
-    while (!datagrams_in.empty()) {
+
+    while ( !datagrams_in.empty() ) {
       auto dg = datagrams_in.front();
       datagrams_in.pop();
-      
-      if (dg.header.ttl < 2) {
+
+      if ( dg.header.ttl < 2 ) {
 
         // if TTL not sufficient
-        continue; 
+        continue;
       }
 
       // reudce ttl
       dg.header.ttl--;
 
       dg.header.compute_checksum();
-      
+
       // longest-prefix match
 
       const RouteEntry* best_route = nullptr;
       uint8_t max_len = 0;
-      
-      for (const RouteEntry& route : routing_table_) {
+
+      for ( const RouteEntry& route : routing_table_ ) {
 
         // viable route match
-        bool route_matched = route_matches(dg.header.dst, route.route_prefix, route.prefix_length);
-        
-        if (route_matched) {
+        bool route_matched = route_matches( dg.header.dst, route.route_prefix, route.prefix_length );
 
-          if (route.prefix_length >= max_len) {
+        if ( route_matched ) {
+
+          if ( route.prefix_length >= max_len ) {
 
             max_len = route.prefix_length;
             best_route = &route;
           }
         }
       }
-      
-      //no route matched
-      if (best_route == nullptr) {
+
+      // no route matched
+      if ( best_route == nullptr ) {
         continue;
       }
-      
+
       // forward datagram
-      Address next_hop_address = best_route->next_hop.value_or(Address::from_ipv4_numeric(dg.header.dst));
-      interfaces_[best_route->interface_num]->send_datagram(dg, next_hop_address);
+      Address next_hop_address = best_route->next_hop.value_or( Address::from_ipv4_numeric( dg.header.dst ) );
+      interfaces_[best_route->interface_num]->send_datagram( dg, next_hop_address );
     }
   }
-
 }
 
+bool Router::route_matches( uint32_t dst_ip, uint32_t route_prefix, uint8_t prefix_length ) const
+{
 
+  if ( prefix_length == 0 ) {
 
-bool Router::route_matches(uint32_t dst_ip, uint32_t route_prefix, uint8_t prefix_length) const {
-
-  if (prefix_length == 0) {
-
-    //default
+    // default
     return true;
   }
-  
-  uint32_t shift = 32 - prefix_length;
-  return (dst_ip >> shift) == (route_prefix >> shift);
 
+  uint32_t shift = 32 - prefix_length;
+  return ( dst_ip >> shift ) == ( route_prefix >> shift );
 }
