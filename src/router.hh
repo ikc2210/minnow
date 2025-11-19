@@ -5,11 +5,14 @@
 
 #include <optional>
 
+
 // \brief A router that has multiple network interfaces and
 // performs longest-prefix-match routing between them.
 class Router
 {
 public:
+  Router() : routing_table_() {}
+
   // Add an interface to the router
   // \param[in] interface an already-constructed network interface
   // \returns The index of the interface after it has been added to the router
@@ -32,6 +35,21 @@ public:
   void route();
 
 private:
+
+  struct RouteEntry {
+    uint32_t route_prefix;
+    uint8_t prefix_length;
+    std::optional<Address> next_hop;
+    size_t interface_num;
+  };
+
   // The router's collection of network interfaces
   std::vector<std::shared_ptr<NetworkInterface>> interfaces_ {};
+
+  // route table
+  std::vector<RouteEntry> routing_table_;
+
+  bool route_matches(uint32_t dst_ip, uint32_t route_prefix, uint8_t prefix_length) const;
+
+
 };
